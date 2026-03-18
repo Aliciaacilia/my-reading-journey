@@ -29,9 +29,12 @@ livroSchema.set('toJSON', {
     transform: (doc, ret) => {
         ret.id = ret._id;
         delete ret._id;
-
+        
         ret.dataInicio = new Date(ret.dataInicio).toLocaleDateString('pt-BR');
         ret.ultimaAtualizacao = new Date(ret.ultimaAtualizacao).toLocaleDateString('pt-BR');
+
+        const progresso = (ret.paginaAtual / ret.totalPaginas) * 100;
+        ret.progresso = `${Math.round(progresso)}%`;
     }
 });
 
