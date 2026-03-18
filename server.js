@@ -76,6 +76,20 @@ app.delete('/livros/:id', async (req, res) => {
     }
 });
 
+app.get('/livros/:id', async (req, res) => {
+    try {
+        const livro = await Livro.findById(req.params.id);
+
+        if (!livro) {
+            return res.status(404).json({ mensagem: "Livro não encontrado" });
+        }
+
+        res.json(livro);
+    } catch (error) {
+        res.status(500).json({ mensagem: "Erro ao buscar livro", erro: error.message });
+    }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
