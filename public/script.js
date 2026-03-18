@@ -27,8 +27,8 @@ async function carregarLivros() {
                 <p style="text-align:right; font-size:12px; color: #2ecc71; margin-bottom: 10px;">${porcentagem}% concluído</p>
 
                 <div class="actions" style="display: flex; gap: 10px;">
-                    <button onclick="atualizarProgresso('${livro._id}', ${atual})" style="flex:2; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Atualizar</button>
-                    <button onclick="deletarLivro('${livro._id}')" style="flex:1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Excluir</button>
+                    <button onclick="atualizarProgresso('${livro.id}', ${atual})" style="flex:2; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Atualizar</button>
+                    <button onclick="deletarLivro('${livro.id}')" style="flex:1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Excluir</button>
                 </div>
             `;
             grid.appendChild(card);
@@ -63,8 +63,15 @@ async function atualizarProgresso(id, atual) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ paginaAtual: Number(novaPag) })
     });
-    
-    if (res.ok) carregarLivros();
+
+    const data = await res.json();
+    console.log("RESPOSTA:", data);
+
+    if (res.ok) {
+        carregarLivros();
+    } else {
+        alert("Erro ao atualizar");
+    }
 }
 
 async function deletarLivro(id) {
