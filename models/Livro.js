@@ -12,6 +12,8 @@ const livroSchema = new mongoose.Schema({
     },
     dataInicio: { type: Date, default: Date.now },
     ultimaAtualizacao: { type: Date, default: Date.now }
+}, {
+    versionKey: false
 });
 
 livroSchema.pre('save', function() {
@@ -21,6 +23,16 @@ livroSchema.pre('save', function() {
         this.status = 'Lendo';
     }
     this.ultimaAtualizacao = Date.now();
+});
+
+livroSchema.set('toJSON', {
+    transform: (doc, ret) => {
+        ret.id = ret._id;
+        delete ret._id;
+
+        ret.dataInicio = new Date(ret.dataInicio).toLocaleDateString('pt-BR');
+        ret.ultimaAtualizacao = new Date(ret.ultimaAtualizacao).toLocaleDateString('pt-BR');
+    }
 });
 
 module.exports = mongoose.model('Livro', livroSchema);
