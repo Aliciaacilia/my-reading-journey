@@ -8,18 +8,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const uri = process.env.MONGO_URI || "mongodb+srv://Aliciaacilia:alicia123@my-reading-journey.qpyi3c4.mongodb.net/myReadingDB?retryWrites=true&w=majority";
+const uri = "mongodb://127.0.0.1:27017/myReadingDB";
 
 mongoose.connect(uri)
-    .then(() => console.log("Conectado ao MongoDB com sucesso!"))
-    .catch(err => console.log("Erro ao conectar ao MongoDB:", err));
+    .then(() => console.log("Conectado ao MongoDB"))
+    .catch(err => console.log("Erro MongoDB:", err));
 
-// Rota de teste inicial
 app.get('/', (req, res) => {
     res.send('API do My Reading Journey rodando!');
 });
 
-// Create: Adicionar um novo livro
 app.post('/livros', async (req, res) => {
     try {
         const novoLivro = new Livro(req.body);
@@ -30,7 +28,6 @@ app.post('/livros', async (req, res) => {
     }
 });
 
-// Read: Buscar todos os livros cadastrados
 app.get('/livros', async (req, res) => {
     try {
         const livros = await Livro.find();
@@ -40,7 +37,6 @@ app.get('/livros', async (req, res) => {
     }
 });
 
-// Update: Editar a página atual de um livro
 app.put('/livros/:id', async (req, res) => {
     try {
         const { paginaAtual } = req.body;
@@ -49,7 +45,7 @@ app.put('/livros/:id', async (req, res) => {
         if (!livro) return res.status(404).json({ mensagem: "Livro não encontrado" });
 
         livro.paginaAtual = paginaAtual;
-        await livro.save(); // O save() dispara o cálculo automático do status no Model
+        await livro.save();
         
         res.json(livro);
     } catch (error) {
@@ -57,7 +53,6 @@ app.put('/livros/:id', async (req, res) => {
     }
 });
 
-// Delete: Excluir um livro da lista
 app.delete('/livros/:id', async (req, res) => {
     try {
         const livroDeletado = await Livro.findByIdAndDelete(req.params.id);
@@ -69,7 +64,6 @@ app.delete('/livros/:id', async (req, res) => {
     }
 });
 
-// Definir a porta do servidor
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
