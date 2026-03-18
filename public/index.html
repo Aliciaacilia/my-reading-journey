@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reading Journey - Gerenciador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+    <header>
+        <h1>📚 My Reading Journey</h1>
+        <p>Gerencie sua estante e seu progresso de leitura</p>
+    </header>
+
+
+    <main class="container">
+        <section id="form-section">
+            <h2>Adicionar Novo Livro</h2>
+            <form id="livro-form">
+                <div class="input-group">
+                    <input type="text" id="titulo" placeholder="Título do Livro" required>
+                    <input type="text" id="autor" placeholder="Autor" required>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="totalPaginas" placeholder="Total de Páginas" required min="1">
+                    <select id="status">
+                        <option value="Quero Ler">Quero Ler</option>
+                        <option value="Lendo">Lendo</option>
+                        <option value="Lido">Lido</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Salvar na Estante</button>
+            </form>
+        </section>
+
+
+        <hr>
+
+
+        <section id="lista-section">
+            <h2>Minha Estante</h2>
+            <div id="estante-grid" class="grid">
+                <p class="loading">Carregando livros...</p>
+            </div>
+        </section>
+    </main>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
