@@ -14,14 +14,13 @@ const livroSchema = new mongoose.Schema({
     ultimaAtualizacao: { type: Date, default: Date.now }
 });
 
-livroSchema.pre('save', function(next) {
+livroSchema.pre('save', function() {
     if (this.paginaAtual >= this.totalPaginas) {
         this.status = 'Lido';
     } else if (this.paginaAtual > 0) {
         this.status = 'Lendo';
     }
     this.ultimaAtualizacao = Date.now();
-    next();
 });
 
 module.exports = mongoose.model('Livro', livroSchema);
