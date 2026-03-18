@@ -5,53 +5,56 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-
-const uri = "mongodb://127.0.0.1:27017/myReadingDB";
-mongoose.connect(uri)
-    .then(() => console.log("✅ Conectado ao MongoDB"))
-    .catch(err => console.error("❌ Erro ao conectar ao MongoDB:", err));
+mongoose.connect("mongodb://127.0.0.1:27017/myReadingDB")
+    .then(() => console.log("✅ Conectado ao SEU MongoDB local"))
+    .catch(err => console.log("❌ Erro: Verifique se o MongoDB Compass está aberto!", err));
 
 const Livro = mongoose.model('Livro', {
     titulo: String,
     autor: String,
     totalPaginas: Number,
     paginaAtual: { type: Number, default: 0 },
-    status: String
+    status: { type: String, default: 'Quero Ler' }
 });
 
-
 app.get('/livros', async (req, res) => {
-    try {
-        const livros = await Livro.find();
-        res.json(livros);
-    } catch (err) {
-        res.status(500).json({ erro: err.message });
-    }
+    const livros = await Livro.find();
+    res.json(livros);
 });
 
 app.post('/livros', async (req, res) => {
+    const novo = new Livro(req.body);
+    await novo.save();
+    res.status(201).json(novo);
+});
+
+app.put('/livros/:id', async (req, res) => {
     try {
-        const novoLivro = new Livro(req.body);
-        await novoLivro.save();
-        res.status(201).json(novoLivro);
+        const { paginaAtual } = req.body;
+        // Busca no SEU banco pelo ID que você criou na SUA máquina
+        const livro = await Livro.findById(req.params.id);
+        
+        if (!livro) return res.status(404).send("Livro não encontrado no seu banco local!");
+
+        livro.paginaAtual = Number(paginaAtual);
+        if (livro.paginaAtual >= livro.totalPaginas) {
+            livro.status = "Lido";
+            livro.paginaAtual = livro.totalPaginas;
+        } else if (livro.paginaAtual > 0) {
+            livro.status = "Lendo";
+        }
+
+        await livro.save();
+        res.json(livro);
     } catch (err) {
-        res.status(400).json({ erro: err.message });
+        res.status(400).send(err);
     }
 });
 
 app.delete('/livros/:id', async (req, res) => {
-    try {
-        await Livro.findByIdAndDelete(req.params.id);
-        res.status(204).send();
-    } catch (err) {
-        res.status(500).json({ erro: err.message });
-    }
+    await Livro.findByIdAndDelete(req.params.id);
+    res.status(204).send();
 });
 
 app.listen(5000, () => console.log('🚀 Servidor rodando na porta 5000'));
-app.put('/livros/:id', async (req, res) => {
-    await Livro.findByIdAndUpdate(req.params.id, req.body);
-    res.send();
-});

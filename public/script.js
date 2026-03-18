@@ -1,91 +1,77 @@
 const API_URL = 'http://localhost:5000/livros';
 
-
 async function carregarLivros() {
     const grid = document.getElementById('estante-grid');
     try {
         const response = await fetch(API_URL);
         const livros = await response.json();
-
-
         grid.innerHTML = '';
-
-
-        if (livros.length === 0) {
-            grid.innerHTML = '<p>Nenhum livro cadastrado ainda.</p>';
-            return;
-        }
-
 
         livros.forEach(livro => {
             const card = document.createElement('div');
             card.className = 'card';
-
-
-            const progresso = Math.round((livro.paginaAtual / livro.totalPaginas) * 100) || 0;
-
+            
+            const atual = Number(livro.paginaAtual) || 0;
+            const total = Number(livro.totalPaginas) || 1;
+            const porcentagem = Math.min(Math.round((atual / total) * 100), 100);
 
             card.innerHTML = `
                 <h3>${livro.titulo}</h3>
-                <p><strong>Autor:</strong> ${livro.autor}</p>
-                <p><strong>Status:</strong> ${livro.status}</p>
-                <p><strong>Progresso:</strong> ${livro.paginaAtual} / ${livro.totalPaginas} (${progresso}%)</p>
-                <div style="background: #eee; height: 10px; border-radius: 5px;">
-                    <div style="background: #2ecc71; height: 100%; width: ${progresso}%; border-radius: 5px;"></div>
+                <p>Autor: ${livro.autor} | Status: <strong>${livro.status}</strong></p>
+                <p>Progresso: ${atual} / ${total} pág.</p>
+                
+                <div class="progress-bar-bg" style="background: #333; height: 12px; border-radius: 6px; margin: 10px 0; overflow: hidden;">
+                    <div class="progress-bar-fill" style="background: #2ecc71; height: 100%; width: ${porcentagem}%; transition: 0.5s;"></div>
                 </div>
-                <button class="btn-delete" onclick="deletarLivro('${livro._id}')">Remover</button>
+                
+                <p style="text-align:right; font-size:12px; color: #2ecc71; margin-bottom: 10px;">${porcentagem}% concluído</p>
+
+                <div class="actions" style="display: flex; gap: 10px;">
+                    <button onclick="atualizarProgresso('${livro._id}', ${atual})" style="flex:2; padding: 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">Atualizar</button>
+                    <button onclick="deletarLivro('${livro._id}')" style="flex:1; padding: 10px; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer;">Excluir</button>
+                </div>
             `;
             grid.appendChild(card);
         });
-    } catch (error) {
-        console.error("Erro ao buscar livros:", error);
-        grid.innerHTML = '<p>Erro ao conectar com o servidor.</p>';
+    } catch (err) {
+        console.error("Erro:", err);
     }
 }
-
 
 document.getElementById('livro-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
-
-    const novoLivro = {
+    const novo = {
         titulo: document.getElementById('titulo').value,
         autor: document.getElementById('autor').value,
         totalPaginas: Number(document.getElementById('totalPaginas').value),
-        paginaAtual: 0,
-        status: document.getElementById('status').value
     };
-
-
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(novoLivro)
-        });
-
-
-        if (response.ok) {
-            e.target.reset();
-            carregarLivros();
-        }
-    } catch (error) {
-        alert("Erro ao salvar livro.");
-    }
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(novo)
+    });
+    e.target.reset();
+    carregarLivros();
 });
 
+async function atualizarProgresso(id, atual) {
+    const novaPag = prompt("Página atual:", atual);
+    if (!novaPag) return;
 
-async function deletarLivro(id) {
-    if (!confirm("Deseja mesmo remover este livro?")) return;
-
-
-    try {
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-        carregarLivros();
-    } catch (error) {
-        alert("Erro ao remover.");
-    }
+    const res = await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ paginaAtual: Number(novaPag) })
+    });
+    
+    if (res.ok) carregarLivros();
 }
 
+async function deletarLivro(id) {
+    if (confirm("Excluir?")) {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        carregarLivros();
+    }
+}
 
 carregarLivros();
