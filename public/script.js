@@ -44,6 +44,7 @@ document.getElementById('livro-form').addEventListener('submit', async (e) => {
         titulo: document.getElementById('titulo').value,
         autor: document.getElementById('autor').value,
         totalPaginas: Number(document.getElementById('totalPaginas').value),
+        status: document.getElementById('status').value
     };
     await fetch(API_URL, {
         method: 'POST',
