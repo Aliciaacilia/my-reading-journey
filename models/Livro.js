@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const livroSchema = new mongoose.Schema({
     titulo: { type: String, required: true },
     autor: { type: String, required: true },
-    paginasTotais: { type: Number, required: true },
+    totalPaginas: { type: Number, required: true },
     paginaAtual: { type: Number, default: 0 },
     status: { 
         type: String, 
@@ -14,9 +14,8 @@ const livroSchema = new mongoose.Schema({
     ultimaAtualizacao: { type: Date, default: Date.now }
 });
 
-// Lógica automática: se a página atual chegar no total, muda o status para "Lido"
 livroSchema.pre('save', function(next) {
-    if (this.paginaAtual >= this.paginasTotais) {
+    if (this.paginaAtual >= this.totalPaginas) {
         this.status = 'Lido';
     } else if (this.paginaAtual > 0) {
         this.status = 'Lendo';

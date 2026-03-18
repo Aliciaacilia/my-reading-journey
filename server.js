@@ -39,14 +39,23 @@ app.get('/livros', async (req, res) => {
 
 app.put('/livros/:id', async (req, res) => {
     try {
-        const { paginaAtual } = req.body;
+        const { paginaAtual, status } = req.body;
         const livro = await Livro.findById(req.params.id);
-        
-        if (!livro) return res.status(404).json({ mensagem: "Livro não encontrado" });
 
-        livro.paginaAtual = paginaAtual;
+        if (!livro) {
+            return res.status(404).json({ mensagem: "Livro não encontrado" });
+        }
+
+        if (paginaAtual !== undefined) {
+            livro.paginaAtual = paginaAtual;
+        }
+
+        if (status) {
+            livro.status = status;
+        }
+
         await livro.save();
-        
+
         res.json(livro);
     } catch (error) {
         res.status(400).json({ mensagem: "Erro ao atualizar", erro: error.message });
@@ -56,8 +65,11 @@ app.put('/livros/:id', async (req, res) => {
 app.delete('/livros/:id', async (req, res) => {
     try {
         const livroDeletado = await Livro.findByIdAndDelete(req.params.id);
-        if (!livroDeletado) return res.status(404).json({ mensagem: "Livro não encontrado" });
-        
+
+        if (!livroDeletado) {
+            return res.status(404).json({ mensagem: "Livro não encontrado" });
+        }
+
         res.json({ mensagem: "Livro removido com sucesso!" });
     } catch (error) {
         res.status(500).json({ mensagem: "Erro ao remover", erro: error.message });
