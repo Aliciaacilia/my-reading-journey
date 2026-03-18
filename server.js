@@ -1,82 +1,36 @@
-require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const Livro = require('./models/Livro'); 
-
 const app = express();
+const cors = require('cors');
+
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
-const uri = "mongodb://127.0.0.1:27017/myReadingDB";
 
-mongoose.connect(uri)
-    .then(() => console.log("Conectado ao MongoDB"))
-    .catch(err => console.log("Erro MongoDB:", err));
 
-app.get('/', (req, res) => {
-    res.send('API do My Reading Journey rodando!');
+
+let livros = [];
+
+
+app.get('/livros', (req, res) => {
+    res.json(livros);
 });
 
-app.post('/livros', async (req, res) => {
-    try {
-        const novoLivro = new Livro(req.body);
-        await novoLivro.save();
-        res.status(201).json(novoLivro);
-    } catch (error) {
-        res.status(400).json({ mensagem: "Erro ao cadastrar", erro: error.message });
-    }
+
+app.post('/livros', (req, res) => {
+    const novoLivro = { ...req.body, _id: Date.now().toString() };
+    livros.push(novoLivro);
+    res.status(201).json(novoLivro);
 });
 
-app.get('/livros', async (req, res) => {
-    try {
-        const livros = await Livro.find();
-        res.json(livros);
-    } catch (error) {
-        res.status(500).json({ mensagem: "Erro ao buscar", erro: error.message });
-    }
+
+app.delete('/livros/:id', (req, res) => {
+    livros = livros.filter(l => l._id !== req.params.id);
+    res.status(204).send();
 });
 
-app.put('/livros/:id', async (req, res) => {
-    try {
-        const { paginaAtual, status } = req.body;
-        const livro = await Livro.findById(req.params.id);
 
-        if (!livro) {
-            return res.status(404).json({ mensagem: "Livro não encontrado" });
-        }
 
-        if (paginaAtual !== undefined) {
-            livro.paginaAtual = paginaAtual;
-        }
 
-        if (status) {
-            livro.status = status;
-        }
-
-        await livro.save();
-
-        res.json(livro);
-    } catch (error) {
-        res.status(400).json({ mensagem: "Erro ao atualizar", erro: error.message });
-    }
-});
-
-app.delete('/livros/:id', async (req, res) => {
-    try {
-        const livroDeletado = await Livro.findByIdAndDelete(req.params.id);
-
-        if (!livroDeletado) {
-            return res.status(404).json({ mensagem: "Livro não encontrado" });
-        }
-
-        res.json({ mensagem: "Livro removido com sucesso!" });
-    } catch (error) {
-        res.status(500).json({ mensagem: "Erro ao remover", erro: error.message });
-    }
-});
-
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
+app.listen(5000, () => console.log('Servidor rodando na porta 5000'));
